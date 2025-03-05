@@ -127,7 +127,9 @@ fun HomeScreen(
                         TaskItem(
                             task = task,
                             modifier = Modifier,
-                            onClick = { task.id },
+                            onClick = {
+                                navController.navigate(Screen.EditTask.createRoute(task.id))
+                            },
                             onDelete = {
                                 taskViewModel.onEvent(TaskEvent.DeleteTask(task))
                                 coroutineScope.launch {
@@ -199,6 +201,5 @@ fun CustomSnackbar(data: SnackbarData) {
 }
 
 
-
-
+//navController.navigate(Screen.EditTask.createRoute(task.id))
 
