@@ -1,0 +1,12 @@
+package com.example.todo_list_v2.presentation.util
+
+sealed class AddEditTaskEvent {
+    data class EnteredTitle(val title: String) : AddEditTaskEvent()
+    data class EnteredContent(val content: String) : AddEditTaskEvent()
+
+    object saveTask : AddEditTaskEvent()
+    object cancelTask : AddEditTaskEvent()
+
+    data class SetStartTime(val time: Long) : AddEditTaskEvent()
+    data class SetEndTime(val time: Long) : AddEditTaskEvent()
+}

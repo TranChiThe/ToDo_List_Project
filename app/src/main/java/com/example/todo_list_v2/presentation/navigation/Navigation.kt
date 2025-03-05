@@ -28,14 +28,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.todo_list_v2.presentation.screen.AddTaskScreen
 import com.example.todo_list_v2.presentation.screen.CalendarScreen
 import com.example.todo_list_v2.presentation.screen.FavoriteScreen
 import com.example.todo_list_v2.presentation.screen.HomeScreen
 import com.example.todo_list_v2.presentation.screen.SearchScreen
+import com.example.todo_list_v2.presentation.util.Screen
 import com.example.todo_list_v2.presentation.view_model.TaskViewModel
 
 @Composable
@@ -52,14 +55,21 @@ fun Navigation() {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            composable("home") { HomeScreen(navController = navController) }
-            composable("search") { SearchScreen(navController = navController) }
-            composable("calendar") { CalendarScreen(navController = navController) }
-            composable("favorite") { FavoriteScreen(navController = navController) }
-            composable("addTask") { AddTaskScreen(navController = navController) }
-
+            composable(Screen.Home.route) { HomeScreen(navController = navController) }
+            composable(Screen.Search.route) { SearchScreen(navController = navController) }
+            composable(Screen.Calendar.route) { CalendarScreen(navController = navController) }
+            composable(Screen.Favorite.route) { FavoriteScreen(navController = navController) }
+            composable(Screen.AddTask.route) {
+                AddTaskScreen(navController = navController, taskId = null)
+            }
+            composable(
+                route = Screen.EditTask.route,
+                arguments = listOf(navArgument("taskId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val taskId = backStackEntry.arguments?.getLong("taskId")
+                AddTaskScreen(navController = navController, taskId = taskId) // Chỉnh sửa
+            }
         }
-
     }
 }
 

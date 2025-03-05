@@ -1,5 +1,6 @@
 package com.example.todo_list_v2.presentation.view_model
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -25,20 +26,37 @@ class TaskViewModel @Inject constructor(
     private var deleteTask: Task? = null
 
     fun onEvent(event: TaskEvent) {
-        if (event is TaskEvent.DeleteTask) {
-            viewModelScope.launch {
-                taskUseCases.deleteTask(event.task)
+        when (event) {
+            is TaskEvent.DeleteTask -> {
+                viewModelScope.launch {
+                    taskUseCases.deleteTask(event.task)
+                    getAllTask()
+                }
+                deleteTask = event.task
             }
-            deleteTask = event.task
+
+            is TaskEvent.UpdateTask -> {
+                viewModelScope.launch {
+                    taskUseCases.updateTask(event.task)
+                }
+            }
+
+            is TaskEvent.RestoreTask -> {
+                viewModelScope.launch {
+                    taskUseCases.addTask(deleteTask!!)
+                }
+            }
         }
+
     }
 
     fun getAllTask() {
         job?.cancel()
         job = viewModelScope.launch {
-            taskUseCases.getAllTask().onEach {
-                _taskState.value = it
+            taskUseCases.getAllTask().collect { tasks ->
+                _taskState.value = tasks
             }
         }
     }
+
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
@@ -32,7 +33,13 @@ val bottomNavItems = listOf(
     NavItem("Home", Icons.Default.Home, Color(0xFF1E88E5), Color(0xFF9E9E9E), "home"),
     NavItem("Search", Icons.Default.Search, Color(0xFF1E88E5), Color(0xFF9E9E9E), "search"),
     NavItem("Calendar", Icons.Default.DateRange, Color(0xFF1E88E5), Color(0xFF9E9E9E), "calendar"),
-    NavItem("Favorite", Icons.Default.Favorite, Color(0xFFFF0000), Color(0xFF9E9E9E), "favorite")
+    NavItem(
+        "Favorite",
+        Icons.Default.FavoriteBorder,
+        Color(0xFFFF0000),
+        Color(0xFF9E9E9E),
+        "favorite"
+    )
 )
 
 @Composable
