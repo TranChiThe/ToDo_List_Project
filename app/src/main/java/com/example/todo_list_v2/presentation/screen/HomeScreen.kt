@@ -125,7 +125,7 @@ fun HomeScreen(
     }
 }
 
-private fun groupTasksByDate(tasks: List<Task>): Map<String, List<Task>> {
+fun groupTasksByDate(tasks: List<Task>): Map<String, List<Task>> {
     val calendar = Calendar.getInstance()
     val today = calendar.apply {
         set(Calendar.HOUR_OF_DAY, 0)

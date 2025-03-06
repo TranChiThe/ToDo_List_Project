@@ -1,8 +1,6 @@
 package com.example.todo_list_v2.di
 
-import android.app.Application
 import android.content.Context
-import com.example.todo_list_v2.data.dao.TaskDao
 import com.example.todo_list_v2.data.repositories.TaskRepositoryImpl
 import com.example.todo_list_v2.domain.model.MyObjectBox
 import com.example.todo_list_v2.domain.model.Task
@@ -12,13 +10,13 @@ import com.example.todo_list_v2.domain.use_cases.DeleteTask
 import com.example.todo_list_v2.domain.use_cases.DeleteTaskById
 import com.example.todo_list_v2.domain.use_cases.GetAllTask
 import com.example.todo_list_v2.domain.use_cases.GetTaskById
+import com.example.todo_list_v2.domain.use_cases.GetFavoriteTask
 import com.example.todo_list_v2.domain.use_cases.SearchTask
 import com.example.todo_list_v2.domain.use_cases.TaskUseCases
 import com.example.todo_list_v2.domain.use_cases.UpdateTask
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.objectbox.Box
@@ -57,5 +55,6 @@ object AppModule {
         getTaskById = GetTaskById(taskRepository),
         deleteTaskById = DeleteTaskById(taskRepository),
         searchTask = SearchTask(),
+        getFavoriteTask = GetFavoriteTask(taskRepository)
     )
 }

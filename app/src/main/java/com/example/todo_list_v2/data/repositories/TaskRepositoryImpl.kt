@@ -32,10 +32,11 @@ class TaskRepositoryImpl @Inject constructor(private val taskBox: Box<Task>) : T
     }
 
     override fun getAllTask(): Flow<List<Task>> = callbackFlow {
-        val listener = taskBox.query().build().subscribe().observer { tasks ->
-            trySend(tasks) // Gửi danh sách task mới khi có thay đổi
+        val query = taskBox.query(Task_.favorite.equal(false)).build()
+        val subscription = query.subscribe().observer { tasks ->
+            trySend(tasks)
         }
-        awaitClose { listener.cancel() }
+        awaitClose { subscription.cancel() }
     }
 
     override suspend fun getTaskById(taskId: Long): Task = withContext((Dispatchers.IO)) {
@@ -67,5 +68,14 @@ class TaskRepositoryImpl @Inject constructor(private val taskBox: Box<Task>) : T
     override suspend fun deleteTaskById(taskId: Long) {
         taskBox.remove(taskId)
     }
+
+    override suspend fun getFavoriteTask(): Flow<List<Task>> = callbackFlow {
+        val query = taskBox.query(Task_.favorite.equal(true)).build()
+        val subscription = query.subscribe().observer { tasks ->
+            trySend(tasks)
+        }
+        awaitClose { subscription.cancel() }
+    }
+
 }
 

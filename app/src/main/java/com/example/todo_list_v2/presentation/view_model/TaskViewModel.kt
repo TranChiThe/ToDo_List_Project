@@ -23,9 +23,6 @@ import javax.inject.Inject
 class TaskViewModel @Inject constructor(
     private val taskUseCases: TaskUseCases
 ) : ViewModel() {
-//    private val _taskState = mutableStateOf(emptyList<Task>())
-//    val taskState: State<List<Task>> = _taskState
-    
     private val _taskFlow = MutableStateFlow<List<Task>>(emptyList())
     val taskFlow: StateFlow<List<Task>> = _taskFlow
     private var job: Job? = null
@@ -52,6 +49,16 @@ class TaskViewModel @Inject constructor(
             }
         }
     }
+
+    fun getFavoriteTask() {
+        job?.cancel()
+        job = viewModelScope.launch {
+            taskUseCases.getFavoriteTask().collect { tasks ->
+                _taskFlow.value = tasks
+            }
+        }
+    }
+
 
     fun onEvent(event: TaskEvent) {
         when (event) {
