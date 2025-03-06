@@ -1,5 +1,6 @@
 package com.example.todo_list_v2.presentation.task
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,6 +8,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,18 +29,19 @@ import java.util.*
 fun TaskItem(
     task: Task,
     modifier: Modifier = Modifier,
-    onDelete: () -> Unit,
-    onUpdate: () -> Unit,
+    onFavorite: () -> Unit,
+    onCheckBox: () -> Unit,
     onClick: () -> Unit
 ) {
     var isChecked by remember { mutableStateOf(task.status == "Done") }
     val maxLength = 18
-    val isDone = task.status == "Done"
+    val isDone by remember { derivedStateOf { task.status == "Done" } }
     val displayTitle = if (task.title.length > maxLength) {
         "${task.title.substring(0, maxLength)}..."
     } else {
         task.title
     }
+    var isFavorite by remember { mutableStateOf(task.favorite) }
 
     Card(
         modifier = modifier
@@ -68,13 +72,15 @@ fun TaskItem(
                         val newStatus = if (isChecked) "Done" else "Pending"
                         task.status = newStatus
                         task.updateAt = System.currentTimeMillis()
-                        onUpdate()
+                        onCheckBox()
                     },
                     colors = CheckboxDefaults.colors(
                         checkedColor = MaterialTheme.colorScheme.primary,
                         uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                 )
+
+
                 Column(
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
@@ -82,12 +88,12 @@ fun TaskItem(
                         text = displayTitle,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontSize = 18.sp,
-                            fontWeight = if (isDone) FontWeight.Normal else FontWeight.Medium
+                            fontWeight = if (isChecked) FontWeight.Normal else FontWeight.Medium
                         ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        textDecoration = if (isDone) TextDecoration.LineThrough else null,
-                        color = if (isDone) Color.Gray.copy(alpha = 0.7f) else Color.Black
+                        textDecoration = if (isChecked) TextDecoration.LineThrough else null,
+                        color = if (isChecked) Color.Gray.copy(alpha = 0.7f) else Color.Black
                     )
                     Text(
                         text = formatTimestamp(task.createdAt),
@@ -97,26 +103,33 @@ fun TaskItem(
                     )
                 }
             }
-
-            // Status và Delete Button
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier
+                    .width(IntrinsicSize.Max)
+                    .padding(end = 8.dp)
             ) {
                 Text(
-                    text = if (isDone) "Done" else "Pending",
+                    text = if (isChecked) "Done" else "Pending",
                     style = MaterialTheme.typography.labelMedium.copy(fontSize = 14.sp),
-                    color = if (isDone) Color(0xFF4CAF50) else Color(0xFFF44336),
+                    color = if (isChecked) Color(0xFF4CAF50) else Color(0xFFF44336),
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 IconButton(
-                    onClick = onDelete,
+                    onClick = {
+                        isFavorite = !isFavorite
+                        val favorite = if (isFavorite) true else false
+                        task.favorite = favorite
+                        onFavorite()
+                        Log.d("AAA", "fasvorite: -> ${task.favorite}")
+                    },
                     modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete Task",
-                        tint = MaterialTheme.colorScheme.error
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = "Favorite",
+                        tint = if (isFavorite) MaterialTheme.colorScheme.error else Color.Gray
                     )
                 }
             }

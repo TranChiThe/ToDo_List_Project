@@ -9,4 +9,5 @@ sealed class AddEditTaskEvent {
 
     data class SetStartTime(val time: Long) : AddEditTaskEvent()
     data class SetEndTime(val time: Long) : AddEditTaskEvent()
+
 }

@@ -9,9 +9,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.todo_list_v2.domain.model.Task
 import com.example.todo_list_v2.domain.repositories.TaskRepository
 import com.example.todo_list_v2.domain.use_cases.TaskUseCases
+import com.example.todo_list_v2.presentation.util.TaskEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,17 +23,43 @@ import javax.inject.Inject
 class TaskViewModel @Inject constructor(
     private val taskUseCases: TaskUseCases
 ) : ViewModel() {
-    private val _taskState = mutableStateOf(emptyList<Task>())
-    val taskState: State<List<Task>> = _taskState
+//    private val _taskState = mutableStateOf(emptyList<Task>())
+//    val taskState: State<List<Task>> = _taskState
+    
+    private val _taskFlow = MutableStateFlow<List<Task>>(emptyList())
+    val taskFlow: StateFlow<List<Task>> = _taskFlow
     private var job: Job? = null
     private var deleteTask: Task? = null
+
+    init {
+        loadTasks()
+        observeTaskEvents()
+    }
+
+    private fun observeTaskEvents() {
+        viewModelScope.launch {
+            TaskEventBus.eventFlow.collect {
+                loadTasks()
+            }
+        }
+    }
+
+    fun loadTasks() {
+        job?.cancel()
+        job = viewModelScope.launch {
+            taskUseCases.getAllTask().collect { tasks ->
+                _taskFlow.value = tasks
+            }
+        }
+    }
 
     fun onEvent(event: TaskEvent) {
         when (event) {
             is TaskEvent.DeleteTask -> {
                 viewModelScope.launch {
                     taskUseCases.deleteTask(event.task)
-                    getAllTask()
+                    loadTasks()
+
                 }
                 deleteTask = event.task
             }
@@ -49,14 +78,5 @@ class TaskViewModel @Inject constructor(
         }
 
     }
-
-    fun getAllTask() {
-        job?.cancel()
-        job = viewModelScope.launch {
-            taskUseCases.getAllTask().collect { tasks ->
-                _taskState.value = tasks
-            }
-        }
-    }
-
 }
+

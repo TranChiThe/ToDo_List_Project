@@ -9,8 +9,9 @@ data class Task(
     var title: String,
     val content: String,
     var status: String,
-    val startTime: Long = System.currentTimeMillis(),
-    val endTime: Long = System.currentTimeMillis(),
+    var favorite: Boolean = false,
+    val startTime: Long,
+    val endTime: Long,
     var createdAt: Long = System.currentTimeMillis(),
     var updateAt: Long = System.currentTimeMillis(),
 )

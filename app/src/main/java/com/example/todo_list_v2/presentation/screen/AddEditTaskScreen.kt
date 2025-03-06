@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,11 +17,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.todo_list_v2.presentation.navigation.AppTopBar
 import com.example.todo_list_v2.presentation.util.AddEditTaskEvent
-import com.example.todo_list_v2.presentation.view_model.AddTaskViewModel
+import com.example.todo_list_v2.presentation.view_model.AddEditTaskViewModel
+import com.example.todo_list_v2.presentation.view_model.TaskEvent
+import com.example.todo_list_v2.presentation.view_model.TaskViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -29,12 +34,13 @@ fun AddTaskScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController,
     taskId: Long? = null,
-    viewModel: AddTaskViewModel = hiltViewModel()
+    viewModel: AddEditTaskViewModel = hiltViewModel()
 ) {
     val title = viewModel.title.value
     val content = viewModel.content.value
     val startTime = viewModel.startTime.value
     val endTime = viewModel.endTime.value
+    val favorite = viewModel.favorite.value
     val context = LocalContext.current
 
     // State cho Date/Time Picker
@@ -47,6 +53,11 @@ fun AddTaskScreen(
     var showTimePicker by remember { mutableStateOf(false) }
     var isStartTime by remember { mutableStateOf(true) }
 
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    var taskViewMode: TaskViewModel = hiltViewModel()
+
     LaunchedEffect(taskId) {
         if (taskId != null) {
             viewModel.loadTaskById(taskId)
@@ -55,24 +66,12 @@ fun AddTaskScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(if (taskId == null) "Add Task" else "Edit Task") },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        viewModel.onEvent(AddEditTaskEvent.cancelTask)
-                        navController.popBackStack()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
+            AppTopBar(
+                title = if (taskId == null) "Add Task" else "Edit Task",
+                onBackClick = {
+                    viewModel.onEvent(AddEditTaskEvent.cancelTask)
+                    navController.popBackStack()
+                }
             )
         },
         floatingActionButton = {
@@ -123,7 +122,24 @@ fun AddTaskScreen(
                 onSave = {
                     viewModel.onEvent(AddEditTaskEvent.saveTask)
                     navController.popBackStack()
-                }
+                },
+                isFavorite = favorite,
+                onDelete = {
+                    taskId?.let {
+                        viewModel.deleteTaskById(it)
+                        navController.popBackStack()
+                    }
+                    coroutineScope.launch {
+                        val result = snackbarHostState.showSnackbar(
+                            message = "Task deleted",
+                            actionLabel = "Undo"
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            taskViewMode.onEvent(TaskEvent.RestoreTask)
+                        }
+                    }
+//                    taskViewMode.onEvent(TaskEvent.UpdateTask(task))
+                },
             )
 
             // Date Picker Dialog
@@ -253,6 +269,8 @@ fun TimeSelectionSection(
 fun TaskInputSection(
     taskTitle: String,
     taskContent: String,
+    isFavorite: Boolean,
+    onDelete: () -> Unit,
     onTaskTitleChange: (String) -> Unit,
     onTaskContentChange: (String) -> Unit,
     onSave: () -> Unit,
@@ -270,12 +288,34 @@ fun TaskInputSection(
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "Task Details",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.primary
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Task Details",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Row() {
+                    IconButton(onClick = {}) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                            contentDescription = "Favorite",
+                            tint = if (isFavorite) Color.Red else Color.Gray
+                        )
+                    }
 
+                    IconButton(onClick = onDelete) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete Task",
+                            tint = Color.Red
+                        )
+                    }
+                }
+            }
             OutlinedTextField(
                 value = taskTitle,
                 onValueChange = onTaskTitleChange,

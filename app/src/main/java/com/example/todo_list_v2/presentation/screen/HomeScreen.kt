@@ -1,59 +1,31 @@
 package com.example.todo_list_v2.presentation.screen
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarData
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.example.todo_list_v2.domain.model.Task
 import com.example.todo_list_v2.presentation.task.TaskItem
 import com.example.todo_list_v2.presentation.util.Screen
+import com.example.todo_list_v2.presentation.view_model.AddEditTaskViewModel
 import com.example.todo_list_v2.presentation.view_model.TaskEvent
 import com.example.todo_list_v2.presentation.view_model.TaskViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.*
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -62,15 +34,11 @@ fun HomeScreen(
     taskViewModel: TaskViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
-    val tasks by taskViewModel.taskState
-    val coroutineScope = rememberCoroutineScope()
+    val tasks by taskViewModel.taskFlow.collectAsState(initial = emptyList())
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(Unit) {
-        taskViewModel.getAllTask()
-    }
+
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         floatingActionButton = {
             AddButton { navController.navigate(Screen.AddTask.route) }
         },
@@ -86,11 +54,12 @@ fun HomeScreen(
                 .fillMaxSize()
                 .background(color = Color.White)
                 .padding(top = 30.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "Task List",
-                fontSize = 30.sp
+                fontSize = 30.sp,
+                fontWeight = FontWeight(300)
             )
             if (tasks.isEmpty()) {
                 Box(
@@ -99,9 +68,7 @@ fun HomeScreen(
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
@@ -118,35 +85,39 @@ fun HomeScreen(
                     }
                 }
             } else {
+                val groupedTasks = groupTasksByDate(tasks)
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp)
                 ) {
-                    items(tasks) { task ->
-                        TaskItem(
-                            task = task,
-                            modifier = Modifier,
-                            onClick = {
-                                navController.navigate(Screen.EditTask.createRoute(task.id))
-                            },
-                            onDelete = {
-                                taskViewModel.onEvent(TaskEvent.DeleteTask(task))
-                                coroutineScope.launch {
-                                    val result = snackbarHostState.showSnackbar(
-                                        message = "Task deleted",
-                                        actionLabel = "Undo"
-                                    )
-                                    if (result == SnackbarResult.ActionPerformed) {
-                                        taskViewModel.onEvent(TaskEvent.RestoreTask)
-                                    }
-                                }
-                            },
-                            onUpdate = {
-                                taskViewModel.onEvent(TaskEvent.UpdateTask(task))
+                    val orderedKeys = listOf("Today", "Yesterday", "One week ago", "Older")
+                    orderedKeys.forEach { key ->
+                        groupedTasks[key]?.let { taskList ->
+                            item {
+                                Text(
+                                    text = key,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
                             }
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
+                            items(taskList) { task ->
+                                TaskItem(
+                                    task = task,
+                                    modifier = Modifier,
+                                    onClick = {
+                                        navController.navigate(Screen.EditTask.createRoute(task.id))
+                                    },
+                                    onFavorite = {
+                                        taskViewModel.onEvent(TaskEvent.UpdateTask(task))
+                                    },
+                                    onCheckBox = {
+                                        taskViewModel.onEvent(TaskEvent.UpdateTask(task))
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                        }
                     }
                 }
             }
@@ -154,15 +125,50 @@ fun HomeScreen(
     }
 }
 
+private fun groupTasksByDate(tasks: List<Task>): Map<String, List<Task>> {
+    val calendar = Calendar.getInstance()
+    val today = calendar.apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+
+    val yesterday = calendar.apply {
+        add(Calendar.DAY_OF_YEAR, -1)
+    }.timeInMillis
+
+    val oneWeekAgo = calendar.apply {
+        add(Calendar.DAY_OF_YEAR, -6)
+    }.timeInMillis
+
+    val grouped = tasks.groupBy { task ->
+        val taskDate = Calendar.getInstance().apply {
+            timeInMillis = task.createdAt
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+
+        when {
+            taskDate == today -> "Today"
+            taskDate == yesterday -> "Yesterday"
+            taskDate >= oneWeekAgo -> "One week ago"
+            else -> "Older"
+        }
+    }
+
+    return grouped.mapValues { entry ->
+        entry.value.sortedByDescending { it.createdAt }
+    }
+}
 
 @Composable
 fun AddButton(onClick: () -> Unit) {
     FloatingActionButton(
-        onClick = {
-            onClick()
-        },
-        modifier = Modifier
-            .padding(bottom = 10.dp, start = 16.dp)
+        onClick = { onClick() },
+        modifier = Modifier.padding(bottom = 10.dp, start = 16.dp)
     ) {
         Icon(
             imageVector = Icons.Default.Add,
@@ -199,7 +205,3 @@ fun CustomSnackbar(data: SnackbarData) {
         }
     }
 }
-
-
-//navController.navigate(Screen.EditTask.createRoute(task.id))
-

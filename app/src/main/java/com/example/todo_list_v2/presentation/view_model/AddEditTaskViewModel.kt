@@ -1,6 +1,5 @@
 package com.example.todo_list_v2.presentation.view_model
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
@@ -8,27 +7,32 @@ import androidx.lifecycle.viewModelScope
 import com.example.todo_list_v2.domain.model.Task
 import com.example.todo_list_v2.domain.use_cases.TaskUseCases
 import com.example.todo_list_v2.presentation.util.AddEditTaskEvent
+import com.example.todo_list_v2.presentation.util.TaskEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AddTaskViewModel @Inject constructor(
+class AddEditTaskViewModel @Inject constructor(
     private val taskUseCases: TaskUseCases
 ) : ViewModel() {
     private val _title = mutableStateOf("")
     val title: State<String> = _title
-
     private val _content = mutableStateOf("")
     val content: State<String> = _content
-
     private val _startTime = mutableStateOf(System.currentTimeMillis())
     val startTime: State<Long> = _startTime
-
     private val _endTime = mutableStateOf(System.currentTimeMillis())
     val endTime: State<Long> = _endTime
-
     private val _taskId = mutableStateOf<Long?>(null)
+    private val _favorite = mutableStateOf(false)
+    val favorite: State<Boolean> = _favorite
+    private var job: Job? = null
 
     fun onEvent(event: AddEditTaskEvent) {
         when (event) {
@@ -47,6 +51,7 @@ class AddTaskViewModel @Inject constructor(
                         title = title.value,
                         content = content.value,
                         status = "Pending",
+                        favorite = false,
                         startTime = startTime.value,
                         endTime = endTime.value,
                         createdAt = System.currentTimeMillis()
@@ -84,8 +89,17 @@ class AddTaskViewModel @Inject constructor(
                 _taskId.value = it.id
                 _title.value = it.title
                 _content.value = it.content
+                _favorite.value = it.favorite
+                _startTime.value = it.startTime
+                _endTime.value = it.endTime
             }
-            Log.d("AAA", "task -> $task.id")
+        }
+    }
+
+    fun deleteTaskById(id: Long) {
+        viewModelScope.launch {
+            taskUseCases.deleteTaskById(id)
+            TaskEventBus.sendEvent()
         }
     }
 }

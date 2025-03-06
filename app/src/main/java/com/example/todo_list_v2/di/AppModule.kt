@@ -9,8 +9,10 @@ import com.example.todo_list_v2.domain.model.Task
 import com.example.todo_list_v2.domain.repositories.TaskRepository
 import com.example.todo_list_v2.domain.use_cases.AddTask
 import com.example.todo_list_v2.domain.use_cases.DeleteTask
+import com.example.todo_list_v2.domain.use_cases.DeleteTaskById
 import com.example.todo_list_v2.domain.use_cases.GetAllTask
 import com.example.todo_list_v2.domain.use_cases.GetTaskById
+import com.example.todo_list_v2.domain.use_cases.SearchTask
 import com.example.todo_list_v2.domain.use_cases.TaskUseCases
 import com.example.todo_list_v2.domain.use_cases.UpdateTask
 import dagger.Module
@@ -52,6 +54,8 @@ object AppModule {
         addTask = AddTask(taskRepository),
         updateTask = UpdateTask(taskRepository),
         deleteTask = DeleteTask(taskRepository),
-        getTaskById = GetTaskById(taskRepository)
+        getTaskById = GetTaskById(taskRepository),
+        deleteTaskById = DeleteTaskById(taskRepository),
+        searchTask = SearchTask(),
     )
 }
