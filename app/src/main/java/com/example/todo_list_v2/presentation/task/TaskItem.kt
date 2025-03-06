@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -43,6 +44,9 @@ fun TaskItem(
     }
     var isFavorite by remember { mutableStateOf(task.favorite) }
 
+    val currentTime = System.currentTimeMillis()
+    val isExpired = task.endTime < currentTime
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -65,24 +69,24 @@ fun TaskItem(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(1f)
             ) {
-                Checkbox(
-                    checked = isChecked,
-                    onCheckedChange = {
-                        isChecked = it
-                        val newStatus = if (isChecked) "Done" else "Pending"
-                        task.status = newStatus
-                        task.updateAt = System.currentTimeMillis()
-                        onCheckBox()
-                    },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = MaterialTheme.colorScheme.primary,
-                        uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                Column {
+                    Checkbox(
+                        checked = isChecked,
+                        onCheckedChange = {
+                            isChecked = it
+                            val newStatus = if (isChecked) "Done" else "Pending"
+                            task.status = newStatus
+                            task.updateAt = System.currentTimeMillis()
+                            onCheckBox()
+                        },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = MaterialTheme.colorScheme.primary,
+                            uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
                     )
-                )
-
-
+                }
                 Column(
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(8.dp)
                 ) {
                     Text(
                         text = displayTitle,
@@ -95,12 +99,53 @@ fun TaskItem(
                         textDecoration = if (isChecked) TextDecoration.LineThrough else null,
                         color = if (isChecked) Color.Gray.copy(alpha = 0.7f) else Color.Black
                     )
-                    Text(
-                        text = formatTimestamp(task.createdAt),
-                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                        color = Color.Gray,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Start Time",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = formatTimestamp(task.startTime),
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                            color = Color.Gray,
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "End Time",
+                            tint = if (isExpired) Color.Red else Color(0xFFFF9900),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = formatTimestamp(task.endTime),
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 12.sp,
+                                color = if (isExpired) Color.Red else Color.Gray
+                            ),
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+
+                        if (isExpired) {
+                            Text(
+                                text = "Expired",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Red
+                                ),
+                                modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                            )
+                        }
+                    }
+
                 }
             }
             Column(
@@ -138,6 +183,6 @@ fun TaskItem(
 }
 
 fun formatTimestamp(timestamp: Long): String {
-    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val sdf = SimpleDateFormat("dd/MM", Locale.getDefault())
     return sdf.format(Date(timestamp))
 }
