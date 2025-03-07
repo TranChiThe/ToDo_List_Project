@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.todo_list_v2.presentation.task.TaskItem
+import com.example.todo_list_v2.presentation.util.AppScaffold
 import com.example.todo_list_v2.presentation.util.Screen
 import com.example.todo_list_v2.presentation.view_model.TaskEvent
 import com.example.todo_list_v2.presentation.view_model.TaskViewModel
@@ -48,11 +49,13 @@ fun FavoriteScreen(
     LaunchedEffect(Unit) {
         taskViewModel.getFavoriteTask(true)
     }
-    Scaffold {
+    AppScaffold(
+        navController = navController,
+        showFab = true // Hiển thị FAB
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = Color.White)
                 .padding(top = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

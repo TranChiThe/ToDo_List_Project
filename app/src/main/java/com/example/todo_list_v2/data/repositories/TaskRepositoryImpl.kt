@@ -5,9 +5,11 @@ import androidx.compose.runtime.remember
 import com.example.todo_list_v2.data.dao.TaskDao
 import com.example.todo_list_v2.domain.model.Task
 import com.example.todo_list_v2.domain.model.Task_
+import com.example.todo_list_v2.domain.model.Task_.*
 import com.example.todo_list_v2.domain.repositories.TaskRepository
 import io.objectbox.Box
 import io.objectbox.BoxStore
+import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -60,9 +62,11 @@ class TaskRepositoryImpl @Inject constructor(private val taskBox: Box<Task>) : T
 
     }
 
-    override suspend fun searchTasks(query: String): List<Task> {
-
-        return TODO("Provide the return value")
+    override suspend fun searchTasks(searchTerm: String): List<Task> = withContext(Dispatchers.IO) {
+        taskBox.query()
+            .contains(Task_.title, searchTerm, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+            .build()
+            .find()
     }
 
     override suspend fun deleteTaskById(taskId: Long) {
@@ -70,7 +74,7 @@ class TaskRepositoryImpl @Inject constructor(private val taskBox: Box<Task>) : T
     }
 
     override suspend fun getFavoriteTask(isFavorite: Boolean): Flow<List<Task>> = callbackFlow {
-        val query = taskBox.query(Task_.favorite.equal(isFavorite)).build()
+        val query = taskBox.query(favorite.equal(isFavorite)).build()
         val subscription = query.subscribe().observer { tasks ->
             trySend(tasks)
         }

@@ -54,7 +54,7 @@ object AppModule {
         deleteTask = DeleteTask(taskRepository),
         getTaskById = GetTaskById(taskRepository),
         deleteTaskById = DeleteTaskById(taskRepository),
-        searchTask = SearchTask(),
+        searchTask = SearchTask(taskRepository),
         getFavoriteTask = GetFavoriteTask(taskRepository)
     )
 }

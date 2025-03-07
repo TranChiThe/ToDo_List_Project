@@ -20,6 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.todo_list_v2.domain.model.Task
 import com.example.todo_list_v2.presentation.task.TaskItem
+import com.example.todo_list_v2.presentation.util.AppScaffold
 import com.example.todo_list_v2.presentation.util.Screen
 import com.example.todo_list_v2.presentation.view_model.AddEditTaskViewModel
 import com.example.todo_list_v2.presentation.view_model.TaskEvent
@@ -39,18 +40,10 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         taskViewModel.getFavoriteTask(false)
     }
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        floatingActionButton = {
-            AddButton { navController.navigate(Screen.AddTask.route) }
-        },
-        floatingActionButtonPosition = FabPosition.End,
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState) { data ->
-                CustomSnackbar(data)
-            }
-        }
-    ) {
+    AppScaffold(
+        navController = navController,
+        showFab = true // Hiển thị FAB
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -178,32 +171,5 @@ fun AddButton(onClick: () -> Unit) {
             tint = Color.Black,
             modifier = Modifier.size(30.dp)
         )
-    }
-}
-
-@Composable
-fun CustomSnackbar(data: SnackbarData) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Gray.copy(alpha = 0.5f)),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        androidx.compose.material3.Snackbar(
-            action = {
-                Row {
-                    TextButton(onClick = { data.performAction() }) {
-                        Text("Undo", color = Color.White)
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    TextButton(onClick = { data.dismiss() }) {
-                        Text("Cancel", color = Color.White)
-                    }
-                }
-            },
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(data.visuals.message)
-        }
     }
 }

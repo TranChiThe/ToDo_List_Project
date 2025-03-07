@@ -11,10 +11,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -37,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.text.style.TextAlign
 import com.example.todo_list_v2.presentation.task.TaskItem
+import com.example.todo_list_v2.presentation.util.AppScaffold
 import com.example.todo_list_v2.presentation.util.Screen
 import com.example.todo_list_v2.presentation.view_model.TaskEvent
 import java.time.Instant
@@ -53,11 +60,18 @@ fun CalendarScreen(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+    val tasks by taskViewModel.taskFlow.collectAsState(initial = emptyList())
+
+    // Get future task time
+    val taskDates = tasks
+        .filter { it.startTime > System.currentTimeMillis() }
+        .map { it.startTime.toLocalDate() }
+        .distinct()
+
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = System.currentTimeMillis(),
-        yearRange = 2000..2030
+        yearRange = 2000..2030,
     )
-    val tasks by taskViewModel.taskFlow.collectAsState(initial = emptyList())
     val selectedDate = datePickerState.selectedDateMillis?.toLocalDate()
     val tasksForSelectedDay = if (selectedDate != null) {
         tasks.filter { task ->
@@ -66,45 +80,54 @@ fun CalendarScreen(
     } else {
         emptyList()
     }
+    val colors = DatePickerDefaults.colors(
+        selectedDayContainerColor = Color.Blue,
+        todayContentColor = Color.Red,
+        dayInSelectionRangeContainerColor = Color.LightGray
+    )
     LaunchedEffect(Unit) {
         taskViewModel.loadTasks()
     }
 
-    Scaffold {
+    AppScaffold(
+        navController = navController,
+        showFab = true // Hiển thị FAB
+    ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = Color.White)
-                .padding(top = 30.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Task Favorite",
-                fontSize = 30.sp,
-                fontWeight = FontWeight(300)
-            )
-        }
-        Spacer(modifier = Modifier.padding(16.dp))
-        Row(
-        ) {
+            horizontalAlignment = Alignment.CenterHorizontally,
+        )
+        {
             DatePicker(
                 state = datePickerState,
                 title = { Text(text = "") },
-                showModeToggle = true
+                showModeToggle = true,
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+                    todayContentColor = Color.Red,
+                ),
+                modifier = modifier
             )
-        }
-        Spacer(modifier = Modifier.padding(15.dp))
-        Column(
-            modifier = Modifier
-                .padding(top = 510.dp),
-        )
-        {
+            Spacer(modifier = Modifier.height(15.dp))
             if (selectedDate != null) {
                 if (tasksForSelectedDay.isEmpty()) {
-                    Text(
-                        text = "There are no missions for this day.",
-                        textAlign = TextAlign.Center,
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = Color.Gray,
+                            modifier = Modifier.size(40.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "No schedule at this time",
+                            fontSize = 20.sp,
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 } else {
                     LazyColumn {
                         items(tasksForSelectedDay) { task ->
