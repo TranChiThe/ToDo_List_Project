@@ -51,10 +51,9 @@ class AddEditTaskViewModel @Inject constructor(
                         title = title.value,
                         content = content.value,
                         status = "Pending",
-                        favorite = false,
+                        favorite = favorite.value,
                         startTime = startTime.value,
                         endTime = endTime.value,
-                        createdAt = System.currentTimeMillis()
                     )
                     if (_taskId.value == null) {
                         taskUseCases.addTask(task)
@@ -75,6 +74,10 @@ class AddEditTaskViewModel @Inject constructor(
                 _startTime.value = System.currentTimeMillis()
                 _endTime.value = System.currentTimeMillis()
                 _taskId.value = null
+            }
+
+            is AddEditTaskEvent.ToggleFavorite -> {
+                _favorite.value = !_favorite.value
             }
 
             is AddEditTaskEvent.SetStartTime -> _startTime.value = event.time

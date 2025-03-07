@@ -33,13 +33,7 @@ val bottomNavItems = listOf(
     NavItem("Home", Icons.Default.Home, Color(0xFF1E88E5), Color(0xFF9E9E9E), "home"),
     NavItem("Search", Icons.Default.Search, Color(0xFF1E88E5), Color(0xFF9E9E9E), "search"),
     NavItem("Calendar", Icons.Default.DateRange, Color(0xFF1E88E5), Color(0xFF9E9E9E), "calendar"),
-    NavItem(
-        "Favorite",
-        Icons.Default.FavoriteBorder,
-        Color(0xFFFF0000),
-        Color(0xFF9E9E9E),
-        "favorite"
-    )
+    NavItem("Favorite", Icons.Default.Favorite, Color(0xFFFF0000), Color(0xFF9E9E9E), "favorite")
 )
 
 @Composable

@@ -36,7 +36,9 @@ fun HomeScreen(
 ) {
     val tasks by taskViewModel.taskFlow.collectAsState(initial = emptyList())
     val snackbarHostState = remember { SnackbarHostState() }
-
+    LaunchedEffect(Unit) {
+        taskViewModel.getFavoriteTask(false)
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         floatingActionButton = {

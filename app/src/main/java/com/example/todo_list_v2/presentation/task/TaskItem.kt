@@ -23,6 +23,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.todo_list_v2.domain.model.Task
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -42,10 +44,15 @@ fun TaskItem(
     } else {
         task.title
     }
-    var isFavorite by remember { mutableStateOf(task.favorite) }
+    var isFavorite by remember(task.id) { mutableStateOf(task.favorite) }
+    val coroutineScope = rememberCoroutineScope()
 
     val currentTime = System.currentTimeMillis()
     val isExpired = task.endTime < currentTime
+
+    LaunchedEffect(task.favorite) {
+        isFavorite = task.favorite
+    }
 
     Card(
         modifier = modifier
@@ -164,10 +171,10 @@ fun TaskItem(
                 IconButton(
                     onClick = {
                         isFavorite = !isFavorite
-                        val favorite = if (isFavorite) true else false
-                        task.favorite = favorite
-                        onFavorite()
-                        Log.d("AAA", "fasvorite: -> ${task.favorite}")
+                        task.favorite = isFavorite
+                        coroutineScope.launch {
+                            onFavorite()
+                        }
                     },
                     modifier = Modifier.size(36.dp)
                 ) {

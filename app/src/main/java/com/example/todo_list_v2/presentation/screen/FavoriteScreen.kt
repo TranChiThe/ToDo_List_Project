@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.todo_list_v2.presentation.task.TaskItem
 import com.example.todo_list_v2.presentation.util.Screen
@@ -40,12 +41,12 @@ import com.example.todo_list_v2.presentation.view_model.TaskViewModel
 @Composable
 fun FavoriteScreen(
     modifier: Modifier = Modifier,
-    navController: NavHostController
+    navController: NavHostController,
+    taskViewModel: TaskViewModel = hiltViewModel()
 ) {
-    val taskViewModel: TaskViewModel = hiltViewModel()
-    val tasks by taskViewModel.taskFlow.collectAsState()
+    val tasks by taskViewModel.taskFlow.collectAsState(initial = emptyList())
     LaunchedEffect(Unit) {
-        taskViewModel.getFavoriteTask()
+        taskViewModel.getFavoriteTask(true)
     }
     Scaffold {
         Column(
@@ -100,7 +101,7 @@ fun FavoriteScreen(
                                     modifier = Modifier.padding(bottom = 8.dp)
                                 )
                             }
-                            items(taskList) { task ->
+                            items(taskList, key = { it.id }) { task ->
                                 TaskItem(
                                     task = task,
                                     modifier = Modifier,

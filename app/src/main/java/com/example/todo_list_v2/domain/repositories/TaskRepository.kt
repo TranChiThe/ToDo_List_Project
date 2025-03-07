@@ -11,5 +11,5 @@ interface TaskRepository {
     suspend fun deleteTask(task: Task)
     suspend fun searchTasks(query: String): List<Task>
     suspend fun deleteTaskById(taskId: Long)
-    suspend fun getFavoriteTask(): Flow<List<Task>>
+    suspend fun getFavoriteTask(isFavorite: Boolean): Flow<List<Task>>
 }

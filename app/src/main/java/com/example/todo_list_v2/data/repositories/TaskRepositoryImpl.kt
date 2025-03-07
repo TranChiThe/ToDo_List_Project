@@ -32,7 +32,7 @@ class TaskRepositoryImpl @Inject constructor(private val taskBox: Box<Task>) : T
     }
 
     override fun getAllTask(): Flow<List<Task>> = callbackFlow {
-        val query = taskBox.query(Task_.favorite.equal(false)).build()
+        val query = taskBox.query().build()
         val subscription = query.subscribe().observer { tasks ->
             trySend(tasks)
         }
@@ -69,8 +69,8 @@ class TaskRepositoryImpl @Inject constructor(private val taskBox: Box<Task>) : T
         taskBox.remove(taskId)
     }
 
-    override suspend fun getFavoriteTask(): Flow<List<Task>> = callbackFlow {
-        val query = taskBox.query(Task_.favorite.equal(true)).build()
+    override suspend fun getFavoriteTask(isFavorite: Boolean): Flow<List<Task>> = callbackFlow {
+        val query = taskBox.query(Task_.favorite.equal(isFavorite)).build()
         val subscription = query.subscribe().observer { tasks ->
             trySend(tasks)
         }

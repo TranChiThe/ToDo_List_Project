@@ -13,6 +13,7 @@ import com.example.todo_list_v2.presentation.util.TaskEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.onEach
@@ -25,6 +26,9 @@ class TaskViewModel @Inject constructor(
 ) : ViewModel() {
     private val _taskFlow = MutableStateFlow<List<Task>>(emptyList())
     val taskFlow: StateFlow<List<Task>> = _taskFlow
+
+    private val _favoriteTasksFlow = MutableStateFlow<List<Task>>(emptyList())
+    val favoriteTasksFlow: StateFlow<List<Task>> = _favoriteTasksFlow
     private var job: Job? = null
     private var deleteTask: Task? = null
 
@@ -50,15 +54,14 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    fun getFavoriteTask() {
+    fun getFavoriteTask(isFavorite: Boolean) {
         job?.cancel()
         job = viewModelScope.launch {
-            taskUseCases.getFavoriteTask().collect { tasks ->
+            taskUseCases.getFavoriteTask(isFavorite).collect { tasks ->
                 _taskFlow.value = tasks
             }
         }
     }
-
 
     fun onEvent(event: TaskEvent) {
         when (event) {
@@ -73,6 +76,7 @@ class TaskViewModel @Inject constructor(
 
             is TaskEvent.UpdateTask -> {
                 viewModelScope.launch {
+                    delay(500)
                     taskUseCases.updateTask(event.task)
                 }
             }
@@ -83,7 +87,6 @@ class TaskViewModel @Inject constructor(
                 }
             }
         }
-
     }
 }
 

@@ -124,6 +124,7 @@ fun AddTaskScreen(
                     navController.popBackStack()
                 },
                 isFavorite = favorite,
+                onFavorite = { viewModel.onEvent(AddEditTaskEvent.ToggleFavorite) },
                 onDelete = {
                     taskId?.let {
                         viewModel.deleteTaskById(it)
@@ -270,6 +271,7 @@ fun TaskInputSection(
     taskTitle: String,
     taskContent: String,
     isFavorite: Boolean,
+    onFavorite: () -> Unit,
     onDelete: () -> Unit,
     onTaskTitleChange: (String) -> Unit,
     onTaskContentChange: (String) -> Unit,
@@ -299,7 +301,7 @@ fun TaskInputSection(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Row() {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = { onFavorite() }) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                             contentDescription = "Favorite",
