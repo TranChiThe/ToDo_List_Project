@@ -1,5 +1,6 @@
 package com.example.todo_list_v2.presentation.screen
 
+import LoadingOverlay
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -24,6 +25,7 @@ import com.example.todo_list_v2.presentation.util.AddEditTaskEvent
 import com.example.todo_list_v2.presentation.view_model.AddEditTaskViewModel
 import com.example.todo_list_v2.presentation.view_model.TaskEvent
 import com.example.todo_list_v2.presentation.view_model.TaskViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -36,6 +38,7 @@ fun AddTaskScreen(
     taskId: Long? = null,
     viewModel: AddEditTaskViewModel = hiltViewModel()
 ) {
+    var isLoading by remember { mutableStateOf(false) }
     val title = viewModel.title.value
     val content = viewModel.content.value
     val startTime = viewModel.startTime.value
@@ -63,7 +66,6 @@ fun AddTaskScreen(
             viewModel.loadTaskById(taskId)
         }
     }
-
     Scaffold(
         topBar = {
             AppTopBar(
@@ -88,6 +90,7 @@ fun AddTaskScreen(
             )
         }
     ) { innerPadding ->
+        LoadingOverlay(isLoading = isLoading)
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -120,8 +123,13 @@ fun AddTaskScreen(
                     navController.popBackStack()
                 },
                 onSave = {
-                    viewModel.onEvent(AddEditTaskEvent.saveTask)
-                    navController.popBackStack()
+                    coroutineScope.launch {
+                        isLoading = true
+                        delay(2000)
+                        viewModel.onEvent(AddEditTaskEvent.saveTask)
+                        isLoading = false
+                        navController.popBackStack()
+                    }
                 },
                 isFavorite = favorite,
                 onFavorite = { viewModel.onEvent(AddEditTaskEvent.ToggleFavorite) },
@@ -189,6 +197,7 @@ fun AddTaskScreen(
                     TimePicker(state = timePickerState)
                 }
             }
+
         }
     }
 }

@@ -1,7 +1,7 @@
 package com.example.todo_list_v2.presentation.screen
 
+import LoadingOverlay
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,10 +21,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.todo_list_v2.presentation.task.TaskItem
 import com.example.todo_list_v2.presentation.util.AppScaffold
-import com.example.todo_list_v2.presentation.util.Screen
+import com.example.todo_list_v2.presentation.navigation.Screen
 import com.example.todo_list_v2.presentation.view_model.SearchTaskViewModel
 import com.example.todo_list_v2.presentation.view_model.TaskEvent
 import com.example.todo_list_v2.presentation.view_model.TaskViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -36,11 +41,14 @@ fun SearchScreen(
     var text by remember { mutableStateOf("") }
     val searchResults = searchTaskViewModel.searchResults.value
     val taskViewModel: TaskViewModel = hiltViewModel()
+    var isLoading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     AppScaffold(
         navController = navController,
         showFab = true // Hiển thị FAB
     ) { paddingValues ->
+        LoadingOverlay(isLoading)
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -53,7 +61,12 @@ fun SearchScreen(
                 value = text,
                 onValueChange = {
                     text = it
-                    searchTaskViewModel.searchTasks(it)
+                    coroutineScope.launch(Dispatchers.IO) {
+//                        isLoading = true
+//                        delay(1000)1
+//                        isLoading = false
+                        searchTaskViewModel.searchTasks(it)
+                    }
                 },
                 label = { Text("Enter task title ...") },
                 modifier = Modifier.fillMaxWidth(),

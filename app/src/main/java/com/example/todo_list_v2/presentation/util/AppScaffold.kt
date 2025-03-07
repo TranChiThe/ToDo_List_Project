@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.todo_list_v2.presentation.util.Screen
+import com.example.todo_list_v2.presentation.navigation.Screen
 
 @Composable
 fun AppScaffold(

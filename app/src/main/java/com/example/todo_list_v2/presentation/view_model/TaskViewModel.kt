@@ -1,22 +1,15 @@
 package com.example.todo_list_v2.presentation.view_model
 
-import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todo_list_v2.domain.model.Task
-import com.example.todo_list_v2.domain.repositories.TaskRepository
 import com.example.todo_list_v2.domain.use_cases.TaskUseCases
 import com.example.todo_list_v2.presentation.util.TaskEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

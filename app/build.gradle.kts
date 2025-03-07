@@ -69,6 +69,10 @@ dependencies {
     // Date
     implementation("com.jakewharton.threetenabp:threetenabp:1.3.1")
 
+    // Animation
+    implementation("com.google.accompanist:accompanist-navigation-animation:0.30.1")
+    implementation("androidx.navigation:navigation-compose:2.7.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

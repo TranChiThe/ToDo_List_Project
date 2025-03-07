@@ -21,11 +21,9 @@ import androidx.navigation.NavHostController
 import com.example.todo_list_v2.domain.model.Task
 import com.example.todo_list_v2.presentation.task.TaskItem
 import com.example.todo_list_v2.presentation.util.AppScaffold
-import com.example.todo_list_v2.presentation.util.Screen
-import com.example.todo_list_v2.presentation.view_model.AddEditTaskViewModel
+import com.example.todo_list_v2.presentation.navigation.Screen
 import com.example.todo_list_v2.presentation.view_model.TaskEvent
 import com.example.todo_list_v2.presentation.view_model.TaskViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.*
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")

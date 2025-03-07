@@ -1,4 +1,4 @@
-package com.example.todo_list_v2.presentation.util
+package com.example.todo_list_v2.presentation.navigation
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")

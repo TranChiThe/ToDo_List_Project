@@ -1,8 +1,6 @@
 package com.example.todo_list_v2.presentation.screen
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,7 +14,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,11 +27,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.todo_list_v2.presentation.task.TaskItem
 import com.example.todo_list_v2.presentation.util.AppScaffold
-import com.example.todo_list_v2.presentation.util.Screen
+import com.example.todo_list_v2.presentation.navigation.Screen
 import com.example.todo_list_v2.presentation.view_model.TaskEvent
 import com.example.todo_list_v2.presentation.view_model.TaskViewModel
 
